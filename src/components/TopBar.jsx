@@ -114,7 +114,7 @@ export default function TopBar({ city, onSearch, onSelectFavorite, onLocate }) {
     <div className="fixed top-4 left-0 w-full z-50 px-3 sm:px-6">
       {/* 📱 Mobile Layout */}
       <div className="sm:hidden flex items-center justify-between w-full px-2 py-2 gap-2">
-        {/* 🔊 Compact SoundToggle (single box only) */}
+        {/* 🔊 Compact SoundToggle */}
         <div className="flex-shrink-0">
           <SoundToggle compact />
         </div>
@@ -235,14 +235,18 @@ export default function TopBar({ city, onSearch, onSelectFavorite, onLocate }) {
         </div>
       </div>
 
-      {/* 💻 Desktop Layout (unchanged) */}
-      <div className="hidden sm:flex items-center justify-between">
-        <SoundToggle />
+      {/* 💻 Desktop Layout — Centered Search Bar */}
+      <div className="hidden sm:grid grid-cols-3 items-center w-full">
+        {/* Left Section */}
+        <div className="flex justify-start">
+          <SoundToggle />
+        </div>
 
-        <div ref={searchWrapRef} className="w-[420px] relative">
+        {/* Center Search */}
+        <div ref={searchWrapRef} className="flex justify-center relative">
           <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-2 bg-white/10 backdrop-blur-xl rounded-2xl px-4 py-2 shadow-md border border-white/20"
+            className="flex items-center gap-2 bg-white/10 backdrop-blur-xl rounded-2xl px-4 py-2 shadow-md border border-white/20 w-[420px]"
           >
             <input
               type="text"
@@ -253,9 +257,42 @@ export default function TopBar({ city, onSearch, onSelectFavorite, onLocate }) {
               className="w-full bg-transparent text-white placeholder-white/70 text-center outline-none text-base"
             />
           </form>
+
+          {/* Centered dropdown */}
+          <AnimatePresence>
+            {suggestions.length > 0 && (
+              <motion.ul
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.18 }}
+                className="absolute mt-2 w-[420px] bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl shadow-lg text-sm overflow-hidden z-50"
+              >
+                {suggestions.map((s, i) => (
+                  <motion.li
+                    key={`${s.name}-${s.country}-${i}`}
+                    onClick={() => selectSuggestion(s)}
+                    className={`px-4 py-2 flex justify-between cursor-pointer ${
+                      activeIndex === i ? "bg-white/30" : "hover:bg-white/20"
+                    }`}
+                  >
+                    <span>
+                      {s.name}
+                      {s.state ? `, ${s.state}` : ""}{" "}
+                      <span className="text-white/50">{s.country}</span>
+                    </span>
+                    {s.country === "IN" && (
+                      <span className="text-orange-400 text-xs">🇮🇳</span>
+                    )}
+                  </motion.li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Right Section */}
+        <div className="flex items-center justify-end gap-3">
           <button
             onClick={addFavorite}
             className="px-3 py-1.5 text-sm rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 transition"

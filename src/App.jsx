@@ -10,8 +10,8 @@ import { playWeatherSound } from "./utils/soundManager";
 
 import TopBar from "./components/TopBar";
 import ForecastBar from "./components/ForecastBar";
-import EarthOrbit from "./components/EarthOrbit";
 import WeatherScene from "./components/WeatherScene";
+import WeatherGlobe from "./components/WeatherGlobe";
 
 export default function App() {
   const [city, setCity] = useState("");
@@ -24,19 +24,20 @@ export default function App() {
   const [isSceneReady, setIsSceneReady] = useState(false);
   const [cityOffset, setCityOffset] = useState(0);
   const [localTime, setLocalTime] = useState(new Date());
+  const [coords, setCoords] = useState({ lat: 28.6139, lng: 77.209 }); // Default Delhi
 
   const timezoneOffset = useMemo(
     () => new Date().getTimezoneOffset() / -60,
     []
   );
 
-  // 🕓 Live clock
+  // Live clock
   useEffect(() => {
     const timer = setInterval(() => setLocalTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // 🌤️ Fetch weather data
+  // Fetch weather by city
   const fetchWeatherByCityName = useCallback(async (name) => {
     setLoading(true);
     setError(null);
@@ -47,13 +48,12 @@ export default function App() {
       setCity(cur.name);
       setWeather(cur);
       setCityOffset(cur.timezone / 3600);
+      setCoords({ lat: cur.coord.lat, lng: cur.coord.lon });
 
-      // AQI fetch (non-blocking)
       getAirQuality(cur.coord.lat, cur.coord.lon)
         .then(setAirQuality)
         .catch(() => console.warn("⚠️ AQI fetch failed"));
 
-      // Forecast conversion
       const list = fc.list.map((f) => ({
         ...f,
         local_dt: new Date((f.dt + cur.timezone) * 1000),
@@ -70,7 +70,7 @@ export default function App() {
     }
   }, []);
 
-  // 🌍 Location fetch
+  // Fetch by coordinates
   const fetchWeatherByCoords = useCallback(
     async (lat, lon) => {
       setLoading(true);
@@ -91,7 +91,7 @@ export default function App() {
     [fetchWeatherByCityName]
   );
 
-  // 📍 Geolocation detection
+  // Geolocation on mount
   useEffect(() => {
     let didRespond = false;
     const fallback = (msg) => {
@@ -118,7 +118,7 @@ export default function App() {
     return () => clearTimeout(timeout);
   }, [fetchWeatherByCityName, fetchWeatherByCoords]);
 
-  // 🔍 City search
+  // City search
   const handleSearch = useCallback(
     (q) => {
       if (!q) return;
@@ -128,7 +128,7 @@ export default function App() {
     [fetchWeatherByCityName]
   );
 
-  // 📍 Manual locate
+  // Manual locate
   const handleLocate = useCallback(() => {
     setAlertMsg("📍 Getting current location...");
     navigator.geolocation.getCurrentPosition(
@@ -143,7 +143,7 @@ export default function App() {
     );
   }, [fetchWeatherByCoords]);
 
-  // 🕓 City time
+  // City time data
   const cityTimeData = useMemo(() => {
     const utcNow =
       localTime.getTime() + localTime.getTimezoneOffset() * 60000;
@@ -169,7 +169,7 @@ export default function App() {
     };
   }, [localTime, cityOffset, timezoneOffset]);
 
-  // 🧭 AQI labels
+  // AQI helper
   const AQI = useMemo(
     () => ({
       color: (a) =>
@@ -206,9 +206,14 @@ export default function App() {
     []
   );
 
+  // Determine if it's day or night at the city
+  const isDaytime =
+    weather &&
+    localTime.getTime() / 1000 > weather.sys.sunrise &&
+    localTime.getTime() / 1000 < weather.sys.sunset;
+
   return (
     <div className="relative w-full min-h-screen text-white overflow-x-hidden overflow-y-auto">
-      {/* 🌅 Placeholder before load */}
       {!isSceneReady && (
         <div
           className="fixed inset-0 transition-bg"
@@ -219,7 +224,6 @@ export default function App() {
         />
       )}
 
-      {/* 🌌 Animated Background */}
       <AnimatePresence mode="wait">
         {weather && isSceneReady && (
           <WeatherScene
@@ -235,10 +239,8 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Overlay tint */}
       <div className="fixed inset-0 bg-black/35 z-0 pointer-events-none" />
 
-      {/* 🧭 Top Bar */}
       <TopBar
         city={city}
         onSearch={handleSearch}
@@ -246,7 +248,6 @@ export default function App() {
         onLocate={handleLocate}
       />
 
-      {/* ⚠️ Alert Message */}
       <AnimatePresence>
         {alertMsg && (
           <motion.div
@@ -260,9 +261,8 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* 🌦️ Main Weather Section */}
+      {/* Main Weather Section */}
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-28 sm:pt-36 pb-20">
-        {/* Loader */}
         {loading && (
           <div className="flex flex-col items-center justify-center text-white/80 mt-24 sm:mt-32 space-y-6 animate-fadeIn">
             <motion.div
@@ -279,10 +279,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Error */}
         {error && <div className="text-center text-red-300">{error}</div>}
 
-        {/* Weather Info Card */}
         {weather && !loading && (
           <motion.div
             initial={{ opacity: 0, y: 14 }}
@@ -290,7 +288,7 @@ export default function App() {
             transition={{ duration: 0.5 }}
             className="glass rounded-2xl p-6 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-center text-center md:text-left"
           >
-            {/* Left Section */}
+            {/* Left Info */}
             <div>
               <div className="text-2xl sm:text-3xl md:text-4xl font-light">
                 {weather.weather[0].main}
@@ -303,7 +301,6 @@ export default function App() {
                 Feels like {Math.round(weather.main.feels_like)}°C
               </div>
 
-              {/* City Time */}
               <div className="mt-6 text-white/75 text-xs sm:text-sm leading-relaxed">
                 {cityTimeData.dateStr} — {cityTimeData.timeStr}
                 <div>
@@ -313,17 +310,31 @@ export default function App() {
               </div>
             </div>
 
-            {/* Orbit */}
-            <div className="flex justify-center items-center scale-90 sm:scale-100">
-              <EarthOrbit
-                timezoneOffset={weather.timezone}
-                sunrise={weather.sys.sunrise}
-                sunset={weather.sys.sunset}
-                currentTime={Math.floor(localTime.getTime() / 1000)}
-              />
-            </div>
+           {/* 🌍 Middle — Realistic Globe */}
+<div className="flex justify-center items-center">
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 1 }}
+    className="relative"
+  >
+    <WeatherGlobe
+      lat={coords.lat}
+      lng={coords.lng}
+      size={260}
+      currentTime={Math.floor(localTime.getTime() / 1000)}
+      isDaytime={
+        weather &&
+        localTime.getTime() / 1000 > weather.sys.sunrise &&
+        localTime.getTime() / 1000 < weather.sys.sunset
+      }
+    />
+  </motion.div>
+</div>
 
-            {/* Right Section */}
+
+
+            {/* Right Info */}
             <div className="flex flex-col justify-between h-full md:text-right text-center space-y-4 sm:space-y-0">
               <div className="space-y-3 sm:space-y-4 text-sm sm:text-base">
                 {[
@@ -342,7 +353,7 @@ export default function App() {
                 ))}
               </div>
 
-              {/* AQI */}
+              {/* AQI Section */}
               {airQuality && (
                 <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-white/10 flex flex-col items-center md:items-end">
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -376,7 +387,6 @@ export default function App() {
           </motion.div>
         )}
 
-        {/* Forecast Bar */}
         {!!forecast.length && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
