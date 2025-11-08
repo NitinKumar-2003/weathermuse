@@ -207,7 +207,7 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen w-full text-white relative overflow-hidden">
+    <div className="relative w-full min-h-screen text-white overflow-x-hidden overflow-y-auto">
       {/* 🌅 Placeholder before load */}
       {!isSceneReady && (
         <div
@@ -236,7 +236,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Overlay tint */}
-      <div className="absolute inset-0 bg-black/35 z-0 pointer-events-none" />
+      <div className="fixed inset-0 bg-black/35 z-0 pointer-events-none" />
 
       {/* 🧭 Top Bar */}
       <TopBar
@@ -261,7 +261,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* 🌦️ Main Weather Section */}
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-28 sm:pt-36 pb-16">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-28 sm:pt-36 pb-20">
         {/* Loader */}
         {loading && (
           <div className="flex flex-col items-center justify-center text-white/80 mt-24 sm:mt-32 space-y-6 animate-fadeIn">
