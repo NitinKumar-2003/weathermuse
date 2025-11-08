@@ -1,13 +1,287 @@
 @import "tailwindcss";
 
-/* Glass helpers */
-.glass { @apply bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl; }
-.glass-soft { @apply bg-white/6 backdrop-blur-lg border border-white/15 shadow-lg; }
+/* 🌫️ Glass effect helpers */
+.glass {
+  @apply bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl;
+  transition: all 0.4s ease-in-out;
+  will-change: backdrop-filter, background;
+}
+.glass:hover {
+  @apply bg-white/15 border-white/30;
+}
+.glass-soft {
+  @apply bg-white/6 backdrop-blur-lg border border-white/15 shadow-lg;
+}
 
-/* Favorite chips */
-.chip { @apply px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition; }
-.chip-outline { @apply bg-transparent; }
+/* 🪶 Favorite chips */
+.chip {
+  @apply px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition;
+}
+.chip-outline {
+  @apply bg-transparent;
+}
 
-/* Optional: thin scrollbar for forecast rail */
-::-webkit-scrollbar { height: 8px; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); border-radius: 9999px; }
+/* 🌅 Global Background */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+  color-scheme: dark;
+  transition: background 3s ease-in-out;
+  scroll-behavior: smooth;
+}
+
+/* ✨ Text rendering */
+body {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 🔮 Fade-in */
+.fade-in {
+  animation: fadeIn 1.5s ease-in-out both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ⚙️ Scrollbar */
+::-webkit-scrollbar {
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+}
+
+/* 🌈 Particles canvas blend */
+canvas {
+  transition: opacity 0.6s ease-in-out;
+  will-change: opacity, transform;
+  pointer-events: none;
+  mix-blend-mode: lighten;
+}
+
+/* 📱 Mobile tweak */
+@media (max-width: 640px) {
+  .glass { @apply backdrop-blur-lg bg-white/8; }
+}
+
+/* ☁️ CLOUD SYSTEM */
+.clouds-wrapper {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5;
+  perspective: 800px;
+}
+.cloud-img {
+  position: absolute;
+  left: -400px;
+  opacity: 0.85;
+  animation: cloudDriftSmooth linear infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.1));
+  transition: filter 1.2s ease, opacity 1.2s ease;
+}
+@keyframes cloudDriftSmooth {
+  0% { transform: translateX(-400px) scale(1); opacity: 0.85; }
+  50% { transform: translateX(50vw) scale(1.02); opacity: 1; }
+  100% { transform: translateX(110vw) scale(1); opacity: 0.85; }
+}
+html[data-theme="day"] .cloud-img {
+  filter: brightness(1.1) saturate(1.1) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08));
+}
+html[data-theme="night"] .cloud-img {
+  filter: brightness(0.6) contrast(0.8) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+  opacity: 0.7;
+}
+
+/* ☀️ SUN GLOW */
+.sun-glow {
+  position: fixed;
+  top: 10%;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(100px);
+  z-index: 2;
+  opacity: 0.85;
+  animation: sunPulse 8s ease-in-out infinite alternate;
+  transition: background 4s ease-in-out, opacity 3s ease-in-out;
+  mix-blend-mode: screen;
+}
+@keyframes sunPulse {
+  0% { transform: translateX(-50%) scale(1); opacity: 0.75; }
+  100% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+}
+html[data-theme="day"] .sun-glow {
+  background: radial-gradient(circle, rgba(255, 240, 190, 0.8), rgba(255, 210, 100, 0.4), transparent 70%);
+}
+html[data-theme="night"] .sun-glow { opacity: 0; }
+html[data-theme="sunrise"] .sun-glow {
+  background: radial-gradient(circle, rgba(255, 180, 100, 0.85), rgba(255, 140, 60, 0.4), transparent 70%);
+}
+html[data-theme="sunset"] .sun-glow {
+  background: radial-gradient(circle, rgba(255, 170, 90, 0.85), rgba(255, 100, 50, 0.45), transparent 70%);
+}
+
+/* 🍃 Floating Leaves */
+.leaf-layer {
+  position: absolute;
+  top: 35%;
+  left: 0;
+  width: 100%;
+  height: 70%;
+  overflow: hidden;
+  z-index: 4;
+  pointer-events: none;
+  perspective: 1000px;
+}
+.leaf {
+  position: absolute;
+  width: 26px;
+  height: 14px;
+  background: linear-gradient(90deg, #4caf50, #81c784);
+  border-radius: 50% 0 50% 0;
+  opacity: 0.9;
+  transform-origin: center;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.2));
+  will-change: transform, opacity;
+  animation: leafFloat cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  transform: translateZ(0);
+}
+@keyframes leafFloat {
+  0% { transform: translateX(0) translateY(0) rotate(0deg); opacity: 0.9; }
+  25% { transform: translateX(25vw) translateY(-10vh) rotate(20deg); }
+  50% { transform: translateX(60vw) translateY(8vh) rotate(-25deg); opacity: 1; }
+  75% { transform: translateX(90vw) translateY(-5vh) rotate(10deg); }
+  100% { transform: translateX(120vw) translateY(0) rotate(0deg); opacity: 0.9; }
+}
+html[data-theme="night"] .leaf {
+  filter: brightness(0.6) saturate(0.8);
+  opacity: 0.6;
+}
+
+/* 🦉 Night Owl */
+.owl {
+  position: fixed;
+  right: 24px;
+  bottom: 22px;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: rgba(25, 25, 40, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 1.2s ease-in-out;
+  transition: transform 0.3s ease;
+}
+.owl:hover { transform: scale(1.05); }
+.owl .eye {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  margin: 0 4px;
+  position: relative;
+  animation: owlBlink 4s ease-in-out infinite;
+}
+.owl .eye::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #333;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+}
+.owl .beak {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid #fbbf24;
+  margin-left: 6px;
+}
+@keyframes owlBlink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+/* 🌫️ Smog / Haze Drift */
+@keyframes smogDrift {
+  0% { transform: translateX(-10%); }
+  50% { transform: translateX(15%); }
+  100% { transform: translateX(-10%); }
+}
+.haze-layer {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 60%, rgba(160, 160, 180, 0.35), rgba(60, 60, 80, 0.5));
+  z-index: 2;
+  opacity: 0.35;
+  animation: smogDrift 45s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* 🌠 Twinkling Stars & Shooting Stars */
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+@keyframes shootingStar {
+  0% { transform: translate(-10%, -10%) scale(0); opacity: 0; }
+  10% { transform: translate(10vw, 10vh) scale(1.2); opacity: 1; }
+  100% { transform: translate(100vw, 100vh) scale(0.3); opacity: 0; }
+}
+
+/* 🌲 Forest Parallax Scene */
+.forest-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  animation: forestBreath 18s ease-in-out infinite;
+}
+@keyframes forestBreath {
+  0%, 100% { transform: scale(1.02) translateY(0); }
+  50% { transform: scale(1.03) translateY(-2px); }
+}
+.forest-shadow {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 40%);
+  mix-blend-mode: multiply;
+  z-index: 1;
+}
+
+/* 🧭 Detail text */
+.details-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 1rem 0;
+}
+.detail-label { @apply text-white/70 text-sm tracking-wide; }
+.detail-value { @apply font-semibold text-white text-sm; }
+.details-grid { @apply grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-6 mt-3; }
+
+/* 📱 Performance tweaks for mobile */
+@media (max-width: 640px) {
+  .sun-glow { width: 260px; height: 260px; filter: blur(60px); }
+  .owl { width: 46px; height: 46px; bottom: 16px; right: 16px; }
+  .leaf-layer { top: 45%; height: 55%; }
+  .haze-layer { opacity: 0.5; }
+}

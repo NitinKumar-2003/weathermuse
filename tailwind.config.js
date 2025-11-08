@@ -6,9 +6,15 @@ export default {
   ],
   theme: {
     extend: {
+      // 🌫️ Custom shadows and blur
       boxShadow: {
         glass: "0 10px 30px rgba(0,0,0,0.25)",
       },
+      backdropBlur: {
+        xs: "2px",
+      },
+
+      // 🎨 Brand color palette
       colors: {
         brand: {
           50: "#f6f8ff",
@@ -23,10 +29,40 @@ export default {
           900: "#2b3982",
         },
       },
-      backdropBlur: {
-        xs: "2px",
+
+      // 🎬 Keyframe animations for WeatherMuse scenes
+      keyframes: {
+        moveClouds: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(120vw)" },
+        },
+        orbit: {
+          "0%": { transform: "translateX(-50%) rotate(0deg)" },
+          "100%": { transform: "translateX(-50%) rotate(360deg)" },
+        },
+        birdFlap: {
+          "0%, 100%": { transform: "rotate(45deg)" },
+          "50%": { transform: "rotate(35deg)" },
+        },
+        flyRight: {
+          "0%": { transform: "translateX(-10vw) translateY(0)" },
+          "100%": { transform: "translateX(120vw) translateY(-18vh)" },
+        },
+        owlBlink: {
+          "0%, 90%, 100%": { transform: "scaleY(1)" },
+          "95%": { transform: "scaleY(0.1)" },
+        },
+      },
+
+      // 🌀 Named animation utilities
+      animation: {
+        moveClouds: "moveClouds 60s linear infinite",
+        orbit: "orbit 80s linear infinite",
+        birdFlap: "birdFlap 2s ease-in-out infinite",
+        flyRight: "flyRight 45s linear infinite",
+        owlBlink: "owlBlink 4s ease-in-out infinite",
       },
     },
   },
   plugins: [],
-}
+};
